@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Middleware e Multer no Express.js</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h2>
+      <img class="escrever" src="img/escrever.png" alt="">
+      <img class="barra-lateral" src="img/barra-lateral.png" alt="">
+      CarrionRDC
+
+    </h2>
+    <h1>Middleware e Multer no Express.js</h1>
+  </header>
+  
+
+  <div class="container">
+    <h2>O que é Middleware?</h2>
+    <p>
+      Middleware são funções que têm acesso ao objeto de requisição (<code>req</code>), ao objeto de resposta (<code>res</code>) e à próxima função de middleware no ciclo de requisição/resposta. Eles são usados para modificar a requisição ou resposta, finalizar a requisição ou chamar o próximo middleware.
+    </p>
+
+    <h3>Como funciona?</h3>
+    <p>No Express.js, middlewares são executados em ordem, e cada um pode:</p>
+    <ul>
+      <li>Executar código.</li>
+      <li>Modificar os objetos <code>req</code> e <code>res</code>.</li>
+      <li>Encerrar o ciclo de resposta (<code>res.send()</code>, <code>res.json()</code>, etc.).</li>
+      <li>Chamar <code>next()</code> para passar para o próximo middleware.</li>
+    </ul>
+
+    <h3>Exemplos:</h3>
+    <p><strong>1. Middleware simples de log:</strong></p>
+    <div class="topo">
+      <div class="top">js</div>
+      <pre><span class="keyword">const</span> express = <span class="keyword">require</span>(<span class="string">'express'</span>);
+<span class="keyword">const</span> app = express();
+
+app.<span class="method">use</span>((req, res, next) => {
+  console.<span class="method">log</span>(<span class="string">`${req.method} ${req.url}`</span>);
+  next(); <span class="comment">// passa para o próximo middleware</span>
+});</pre>
+    </div>
+
+    <p><strong>2. Middleware para proteger rotas:</strong></p>
+    <div class="topo">
+      <div class="top">js</div>
+      <pre><span class="keyword">function</span> checkAuth(req, res, next) {
+  <span class="keyword">if</span> (req.headers.authorization === <span class="string">"secreta"</span>) {
+    next();
+  } <span class="keyword">else</span> {
+    res.status(<span class="number">401</span>).<span class="method">send</span>(<span class="string">'Não autorizado'</span>);
+  }
+}
+
+app.<span class="method">use</span>(<span class="string">'/admin'</span>, checkAuth); <span class="comment">// middleware só para rotas que começam com /admin</span></pre>
+    </div>
+
+    <h2>Multer: Upload de Arquivos no Express.js</h2>
+    <h3>O que é Multer?</h3>
+    <p>Multer é um middleware para tratamento de <code>multipart/form-data</code>, usado principalmente para upload de arquivos em aplicações Express.js.</p>
+
+    <h3>Como configurar?</h3>
+    <p>Instale com o npm:</p>
+    <div class="topo">
+      <div class="top">bash</div>
+      <pre>npm install multer</pre>
+    </div>
+
+    <p>Importe e configure:</p>
+    <div class="topo">
+      <div class="top">js</div>
+      <pre><span class="keyword">const</span> multer = <span class="keyword">require</span>(<span class="string">'multer'</span>);
+
+<span class="comment">// Define onde os arquivos serão salvos</span>
+<span class="keyword">const</span> storage = multer.<span class="method">diskStorage</span>({
+  destination: <span class="keyword">function</span> (req, file, cb) {
+    cb(<span class="literal">null</span>, <span class="string">'uploads/'</span>); <span class="comment">// pasta onde os arquivos vão ser armazenados</span>
+  },
+  filename: <span class="keyword">function</span> (req, file, cb) {
+    cb(<span class="literal">null</span>, Date.<span class="method">now</span>() + <span class="string">'-'</span> + file.originalname); <span class="comment">// nome do arquivo</span>
+  }
+});
+
+<span class="keyword">const</span> upload = multer({ storage: storage });</pre>
+    </div>
+
+    <h3>Como usar?</h3>
+    <p><strong>Upload de um único arquivo:</strong></p>
+    <div class="topo">
+      <div class="top">js</div>
+      <pre>app.<span class="method">post</span>(<span class="string">'/upload'</span>, upload.<span class="method">single</span>(<span class="string">'arquivo'</span>), (req, res) => {
+  res.<span class="method">send</span>(<span class="string">'Arquivo recebido!'</span>);
+});</pre>
+    </div>
+
+    <p><code>upload.single('arquivo')</code>: espera um campo de formulário chamado <code>arquivo</code>.</p>
+
+    <p><strong>Upload de múltiplos arquivos:</strong></p>
+    <div class="topo">
+      <div class="top">js</div>
+      <pre>app.<span class="method">post</span>(<span class="string">'/upload-multiplos'</span>, upload.<span class="method">array</span>(<span class="string">'fotos'</span>, <span class="number">5</span>), (req, res) => {
+  res.<span class="method">send</span>(<span class="string">'Arquivos recebidos!'</span>);
+});</pre>
+    </div>
+
+    <h3>Dicas Extras</h3>
+    <ul>
+      <li>Combine Multer com middleware de autenticação para proteger uploads.</li>
+      <li>Use validação para restringir tipos e tamanhos de arquivos.</li>
+      <li>Multer também suporta armazenamento em memória e integração com serviços como Amazon S3.</li>
+    </ul>
+  </div>
+</body>
+</html>
